@@ -1,7 +1,7 @@
 RFID Library
 ============
 
-125Khz RFID library for Arduino. 
+125Khz RFID library for Arduino.
 
 This library only support TTL RS232 serial port.
 
@@ -25,7 +25,7 @@ that your data  : 00 91 6f 0b f5
 `f5 = 00^91^6f^0b`
 
 
-#### Pins 
+#### Pins
 
 1. VCC support 3.3 ~ 5V
 2. TX, RX connect to Arduino or Seeeduino
@@ -33,14 +33,14 @@ that your data  : 00 91 6f 0b f5
 4. W0, W1 is for wiegand protocol, but this library not support yet.
 
 ```
-     		+-----------+
-++++++++----|VCC	  T1|----
-|  +++++----|GND	  T2|----
-|  | |++----|TX		 SER|----
-|  | |	----|RX		 LED|----	
-|  | |	----|W0		BEEP|----
-|  | |	----|W1		 GND|----
-|  | |		+-----------+
+            +-----------+
+++++++++----|VCC      T1|----
+|  +++++----|GND      T2|----
+|  | |++----|TX      SER|----
+|  | |  ----|RX      LED|----
+|  | |  ----|W0     BEEP|----
+|  | |  ----|W1      GND|----
+|  | |      +-----------+
 |  | \___________________________________
 |  |_____________________________        |
 |                                |       |
@@ -71,7 +71,7 @@ that your data  : 00 91 6f 0b f5
 |                                      | | | | | | | | | | | |
 |                                      + + + + + + + + + + + +
 |____________________________________________|
-	
+
 ```
 
 ### Usage
@@ -91,35 +91,36 @@ Connecting RFID Reader RX, TX to Arduino pin headers.
 
 #define TEST
 
-SeeedRFID RFID(RFID_RX_PIN, RFID_TX_PIN);
+SoftwareSerial RFIDSerial = SoftwareSerial(RFID_RX_PIN, RFID_TX_PIN);
+SeeedRFID RFID = SeeedRFID(RFIDSerial);
 RFIDdata tag;
 
 void setup() {
-	Serial.begin(57600);
-	Serial.println("Hello, double bk!");
+  Serial.begin(57600);
+  Serial.println("Hello, double bk!");
+  RFIDSerial.begin(9600);
 }
 
-void loop() { 
-	if(RFID.isAvailable()){
-		tag = RFID.data();
-		Serial.print("RFID card number: ");
-		Serial.println(RFID.cardNumber());
+void loop() {
+  if (RFID.isAvailable()) {
+    tag = RFID.data();
+    Serial.print("RFID card number: ");
+    Serial.println(RFID.cardNumber());
 #ifdef TEST
-	Serial.print("RFID raw data: ");
-	for(int i=0; i<tag.dataLen; i++){
-	    Serial.print(tag.raw[i], HEX);
-	    Serial.print('\t');
-		}
+  Serial.print("RFID raw data: ");
+  for (int i = 0; i < tag.dataLen; i++) {
+    Serial.print(tag.raw[i], HEX);
+    Serial.print('\t');
+  }
 #endif
-	}
+  }
 }
 
 ```
 
 ### Using multiple readers
-When using multiple readers, you'll need to call the 'listen' function in order to receive any future readings.
 ```c
-// RFID_UART.ino
+// RFID_UART_MULTIPLE.ino
 
 #include <SoftwareSerial.h>
 #include <SeeedRFID.h>
@@ -130,32 +131,35 @@ When using multiple readers, you'll need to call the 'listen' function in order 
 #define RFID2_RX_PIN 12
 #define RFID2_TX_PIN 13
 
-
-SeeedRFID RFID(RFID_RX_PIN, RFID_TX_PIN);
+SofwareSerial RFIDSerial = SoftwareSerial(RFID_RX_PIN, RFID_TX_PIN);
+SeeedRFID RFID = SeeedRFID(RFIDSerial);
 RFIDdata tag;
 
-SeeedRFID RFID2(RFID2_RX_PIN, RFID2_TX_PIN);
+SoftwareSerial RFID2Serial = SoftwareSerial(RFID2_RX_PIN, RFID2_TX_PIN);
+SeeedRFID RFID2 = SeeedRFID(RFID2Serial);
 RFIDdata tag2;
 
 void setup() {
   Serial.begin(9600);
-  RFID.listen(); //first, we listen for data on reader #1
+  RFIDSerial.begin(9600);
+  RFID2Serial.begin(9600);
+  RFIDSerial.listen(); //first, we listen for data on reader #1
 }
 
-void loop() { 
+void loop() {
 
-  if(RFID.isAvailable()){
+  if (RFID.isAvailable()) {
     tag = RFID.data();
     Serial.print("RFID card number: ");
     Serial.println(RFID.cardNumber());
-    RFID2.listen(); //now start listening for data on reader #2
+    RFID2Serial.listen(); //now start listening for data on reader #2
   }
 
-  if(RFID2.isAvailable()){
+  if (RFID2.isAvailable()) {
     tag2 = RFID2.data();
     Serial.print("RFID2 card number: ");
     Serial.println(RFID2.cardNumber());
-    RFID.listen(); //then we listen to reader #1 again...
+    RFIDSerial.listen(); //then we listen to reader #1 again...
   }
 }
 
@@ -182,6 +186,3 @@ global distributors and partners to push open hardware movement.<br>
 [RFID Image]: http://www.seeedstudio.com/wiki/images/6/6a/RFID.jpg
 [Github Homepage]: https://github.com/yexiaobo-seeedstudio
 
-
-
-[![Analytics](https://ga-beacon.appspot.com/UA-46589105-3/RFID_Library)](https://github.com/igrigorik/ga-beacon)
